@@ -52,7 +52,7 @@ Identify response:
 ```
 python test_services.py --face-enroll-a /samples/face/obama.jpg --face-enroll-b /samples/face/obama2.jpg --face-probe /samples/face/biden.jpg
 
- python test_services.py  --voice-enroll-a /samples/voice/jackson_0.wav --voice-enroll-b /samples/voice/jackson_1.wav --voice-probe  /samples/voice/nicolas_0.wav  --voice-url http://172.18.0.3:8081
+ python test_services.py  --voice-enroll-a /samples/voice/jackson_0.wav --voice-enroll-b /samples/voice/jackson_1.wav --voice-probe  /samples/voice/nicolas_0.wav 
 
 
 docker-compose run  --entrypoint bash  tester
