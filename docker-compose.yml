@@ -1,0 +1,58 @@
+﻿
+services:
+  face-service:
+    build:
+      context: ./services/face-service
+    container_name: face-service
+    ports:
+      - "18081:8080"
+    volumes:
+      - ./services/face-service/models:/models
+      - ./data/face:/data
+    environment:
+      - YUNET_MODEL_PATH=/models/face_detection_yunet_2023mar.onnx
+      - SFACE_MODEL_PATH=/models/face_recognition_sface_2021dec.onnx
+      - FACE_DB_PATH=/data/face_embeddings.json
+      - FACE_DEFAULT_THRESHOLD=0.40
+    restart: unless-stopped
+
+  voice-service:
+    build:
+      context: ./services/voice-service
+    container_name: voice-service
+    ports:
+      - "18082:8080"
+    volumes:
+      - ./services/voice-service/models:/models
+      - ./data/voice:/data
+    environment:
+      - VOICE_DB_PATH=/data/voice_embeddings.json
+      - VOICE_DEFAULT_THRESHOLD=0.72
+      - WESPEAKER_MODEL_DIR=/models/cnceleb_resnet34
+    restart: unless-stopped
+
+  tester:
+    build:
+      context: ./tests
+    depends_on:
+      - face-service
+      - voice-service
+    volumes:
+      - ./tests:/tests
+      - ./samples:/samples
+
+  gradio-ui:
+    build:
+      context: ./services/gradio-ui
+    container_name: gradio-ui
+    depends_on:
+      - face-service
+      - voice-service
+    environment:
+      - FACE_SERVICE_URL=http://face-service:8080
+      - VOICE_SERVICE_URL=http://voice-service:8080
+      - UI_FACE_THRESHOLD=0.40
+      - UI_VOICE_THRESHOLD=0.72
+    ports:
+      - "17860:7860"
+    restart: unless-stopped

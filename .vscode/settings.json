@@ -1,0 +1,4 @@
+{
+    "snyk.advanced.autoSelectOrganization": true,
+    "python.defaultInterpreterPath": "c:\\Users\\liah\\AppData\\Local\\Python\\bin\\python3.14.exe"
+}
