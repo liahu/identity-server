@@ -170,14 +170,26 @@ def enroll(person_id: str = Form(...), file: UploadFile = File(...)) -> dict:
 
 
 @app.post("/identify", response_model=IdentifyResponse)
-def identify(file: UploadFile = File(...), threshold: float | None = Form(default=None)) -> IdentifyResponse:
+def identify(
+    file: UploadFile = File(...),
+    threshold: float | None = Form(default=None),
+    userids: str | None = Form(default=None)
+) -> IdentifyResponse:
     if engine is None:
         raise HTTPException(status_code=500, detail=f"Engine init failed: {init_error}")
     use_threshold = DEFAULT_THRESHOLD if threshold is None else float(threshold)
     try:
         img = read_uploaded_image(file)
         probe = engine.extract_embedding(img)
-        pid, score, topk = identify_top1(probe, store.all_embeddings())
+
+        all_embeddings = store.all_embeddings()
+        if userids:
+            target_ids = [uid.strip() for uid in userids.split(',') if uid.strip()]
+            filtered_embeddings = {pid: all_embeddings[pid] for pid in target_ids if pid in all_embeddings}
+        else:
+            filtered_embeddings = all_embeddings
+
+        pid, score, topk = identify_top1(probe, filtered_embeddings)
         matched = bool(score is not None and score >= use_threshold)
         return IdentifyResponse(
             matched=matched,
